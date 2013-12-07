@@ -1,0 +1,303 @@
+<doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+.correct {
+    color: green;
+}
+  
+.wrong {
+    color: red;
+}
+
+.round {
+    -moz-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    border: 5px solid darkgrey;
+    background: lightgrey;
+    padding: 5px;
+    width: 56px;
+}
+
+.round:hover {
+    opacity: 0.6;
+}
+
+#example td {
+	font-size: 100px;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select:none;
+	user-select:none;
+    text-align: center;
+}
+
+table {
+	border-collapse: collapse;
+    display: inline-block;
+}
+
+#results {
+    margin-left: 100px;
+}
+
+#results td {
+    border: solid black 1px;
+    margin: 50px;
+    text-align: right;
+}
+
+#example tr.last {
+	border-bottom: solid;
+	border-bottom-width: 4px;
+	border-bottom-color: black;
+}
+
+.no_selection {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select:none;
+	user-select:none;
+}
+
+.result {
+	border: dotted;
+	font-size: 100px;
+	width: 56px;
+	border-width: 2px;
+}
+
+span {
+	display: inline-block;
+	width: 0;
+	height: 5px;
+}
+
+.selected {
+	border-color: blue;
+	border-width: 2px;
+    background-color: #F0F0F0;
+}
+
+.service-ok {
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    background-color: black;
+}
+
+.hidden {
+    visibility: hidden;
+}
+    </style>
+	<script>
+        function $(id) {
+            return document.getElementById(id);
+        }
+    
+        function get_number(prefix) {
+            var d0 = 0;
+            if ($(prefix + '0')) {
+                d0 = Number($(prefix + '0').innerText);
+            }
+            var d1 = Number($(prefix + '1').innerText);
+            var d2 = Number($(prefix + '2').innerText);
+            var d3 = Number($(prefix + '3').innerText);
+            var d4 = Number($(prefix + '4').innerText);
+            var n = 10000*d0 + 1000*d1 + 100*d2 + 10*d3 + d4;
+            return(n);
+        }
+    
+        function generate_test() {
+            test_number = test_number + 1;
+            test_started = new Date();
+            
+            $('a1').innerText = Math.floor(Math.random() * 10);
+            $('a2').innerText = Math.floor(Math.random() * 10);
+            $('a3').innerText = Math.floor(Math.random() * 10);
+            $('a4').innerText = Math.floor(Math.random() * 10);
+            
+            $('b1').innerText = Math.floor(Math.random() * 10);
+            $('b2').innerText = Math.floor(Math.random() * 10);
+            $('b3').innerText = Math.floor(Math.random() * 10);
+            $('b4').innerText = Math.floor(Math.random() * 10);
+            
+            $('r0').innerHTML = '&nbsp;'
+            $('r1').innerHTML = '&nbsp;'
+            $('r2').innerHTML = '&nbsp;'
+            $('r3').innerHTML = '&nbsp;'
+            $('r4').innerHTML = '&nbsp;'
+            
+            change_selection($('r4'));
+            
+            $('d0').style.visibility = 'hidden';
+            $('d1').style.visibility = 'hidden';
+            $('d2').style.visibility = 'hidden';
+            $('d3').style.visibility = 'hidden';
+        }
+    
+        function check_result() {
+            var correct = get_number('a')+get_number('b') === get_number('r');
+            
+            var results_table = $('results');
+            var row = results_table.insertRow(1);
+            
+            if (correct) {
+                row.classList.add('correct');
+            }
+            else {
+                row.classList.add('wrong');
+            }
+            
+            var cell_number = row.insertCell(0);
+            cell_number.innerHTML = String(test_number);
+            var cell_test = row.insertCell(1);
+            cell_test.innerHTML = String(get_number('a')) + ' + ' + String(get_number('b'));
+            var cell_result = row.insertCell(2);
+            cell_result.innerHTML = String(get_number('r'));
+            var cell_time = row.insertCell(3);
+            cell_time.innerHTML = String(Math.round(0.5 + (new Date() - test_started) / 1000)) + ' сек';
+            
+            generate_test();
+        }
+    
+		var selection;
+        var test_number = 0;
+        var test_started;
+
+		function on_load() {
+   			selection = $('r4');
+            generate_test();
+		}
+
+		function change_selection(elem) {
+			selection.classList.remove('selected');
+			elem.classList.add('selected');
+			selection = elem;
+		}
+		
+        function move_selection_left() {
+            var selection_id = selection.getAttribute('id');
+            var pattern = new RegExp('^r(\\d+)$');
+            var match = pattern.exec(selection_id);
+            if (match) {
+                var index = Number(match[1]);
+                if (index > 0) {
+                    index = index - 1;
+                    change_selection($('r' + index));
+                }
+            }
+        }
+        
+        function move_selection_right() {
+            var selection_id = selection.getAttribute('id');
+            var pattern = new RegExp('^r(\\d+)$');
+            var match = pattern.exec(selection_id);
+            if (match) {
+                var index = Number(match[1]);
+                if (index < 4) {
+                    index = index + 1;
+                    change_selection($('r' + index));
+                }
+            }
+        }
+        
+		function on_key_up() {
+			var event = window.event;
+			
+			if (event.keyIdentifier === 'Left') {
+                move_selection_left();
+			}
+			else if (event.keyIdentifier === 'Right') {
+                move_selection_right();
+			}
+			else if (event.which >= 48 && event.which <= 57) {
+				var digit = event.which - 48;
+				selection.innerHTML = String(digit);
+                
+                move_selection_left();
+                
+                if (event.shiftKey) {
+                    var selection_id = selection.getAttribute('id');
+                    var pattern = new RegExp('^r(\\d+)$');
+                    var match = pattern.exec(selection_id);
+                    if (match) {
+                        var index = Number(match[1]);
+                        toggle_dot(index);
+                    }
+                }
+			}
+            else if (event.keyIdentifier === "Enter") {
+                check_result();
+            }
+            else {
+                console.log(event);
+                return false;
+            }
+		}
+        
+        function on_key_down() {
+            if (window.event.which === 8) {
+                move_selection_right();
+                return false;
+            }
+            return true;
+        }
+        
+        function toggle_dot(number) {
+            var dot = $('d'+number);
+            if (dot.style.visibility === 'hidden' || dot.style.visibility === '') {
+                dot.style.visibility = 'visible';
+            }
+            else {
+                dot.style.visibility = 'hidden';
+            }
+        }
+	</script>
+</head>
+<body onload="on_load()" onkeyup="on_key_up()" onkeydown="return on_key_down()">
+<div align="center">
+<table id="example">
+    <tr>
+        <td></td>
+        <td onclick="toggle_dot(0)"><div align="center"><div id="d0" class="service-ok hidden"></div></div></td>
+        <td onclick="toggle_dot(1)"><div align="center"><div id="d1" class="service-ok hidden"></div></div></td>
+        <td onclick="toggle_dot(2)"><div align="center"><div id="d2" class="service-ok hidden"></div></div></td>
+        <td onclick="toggle_dot(3)"><div align="center"><div id="d3" class="service-ok hidden"></div></div></td>
+        <td><div align="center"><div id="d4" class="service-ok hidden"></div></div></td>
+    </tr>
+    <tr>
+        <td rowspan="2" colspan="2" onclick="toggle_dot(0)">+</td>
+        <td id="a1" onclick="toggle_dot(1)"></td>
+        <td id="a2" onclick="toggle_dot(2)"></td>
+        <td id="a3" onclick="toggle_dot(3)"></td>
+        <td id="a4"></td>
+    </tr>
+    <tr class="last">
+        <td id="b1" onclick="toggle_dot(1)"></td>
+        <td id="b2" onclick="toggle_dot(2)"></td>
+        <td id="b3" onclick="toggle_dot(3)"></td>
+        <td id="b4"></td>
+    </tr>
+    <tr>
+        <td>=</td>
+        <td><span></span><div id="r0" class="result" onclick="change_selection(this)">&nbsp;</div></td>
+        <td><span></span><div id="r1" class="result" onclick="change_selection(this)">&nbsp;</div></td>
+        <td><span></span><div id="r2" class="result" onclick="change_selection(this)">&nbsp;</div></td>
+        <td><span></span><div id="r3" class="result" onclick="change_selection(this)">&nbsp;</div></td>
+        <td><span></span><div id="r4" class="result selected" onclick="change_selection(this)" autofocus="autofocus">&nbsp;</div></td>
+        <td><div class="round" onclick="check_result()">?</div></td>
+    </tr>
+</table>
+<table id="results">
+    <tr>
+        <th>№</td>
+        <th>пример</td>
+        <th>ответ</td>
+        <th>время</td>
+    </tr>
+</table>
+</div>
+</body>
+</html>
